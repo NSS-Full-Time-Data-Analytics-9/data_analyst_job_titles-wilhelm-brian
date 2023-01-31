@@ -25,8 +25,8 @@ Where location IN ('TN', 'KY');
 Select Count(*)
 From data_analyst_jobs
 Where location = 'TN'
-	AND star_rating >= 4.0;
---Answer: 4
+	AND star_rating > 4.0;
+--Answer: 3
 
 --5.	How many postings in the dataset have a review count between 500 and 1000?
 Select Count(*)
@@ -88,44 +88,35 @@ Where title NOT ILIKE '%Analyst%'
 
 --*BONUS*
 --1. You want to understand which jobs requiring SQL are hard to fill. Find the number of jobs by industry (domain) that require SQL and have been posted longer than 3 weeks.
-Select domain
+Select domain, skill
 From data_analyst_jobs
-Where skill = 'SQL'
+Where skill iLIKE '%SQL%'
 	And days_since_posting >= 21;
---Answer: 15 (with NULL)
 
 --2. Disregard any postings where the domain is NULL. 
-Select domain
+Select Count(domain)
 From data_analyst_jobs
-Where skill = 'SQL'
+Where skill iLIKE '%SQL%'
 	And days_since_posting >= 21
 	And domain IS NOT NULL;
---Answer: 11
+--Answer: 420
 
 --3. Order your results so that the domain with the greatest number of `hard to fill` jobs is at the top.
-Select domain, title, company
+Select Distinct domain, COUNT(Distinct title) AS hard_to_fill
 From data_analyst_jobs
-Where skill = 'SQL'
+Where skill iLIKE '%SQL%'
 	And days_since_posting >= 21
 	And domain IS NOT NULL
-Order By days_since_posting DESC;
---Answer: Consulting and Business Services / Sr. DataAnalyst / Harnham
+Group BY domain
+Order By hard_to_fill DESC;
 
 --4. Which three industries are in the top 4 on this list? How many jobs have been listed for more than 3 weeks for each of the top 4?
-Select domain, Count(title) AS number_of_jobs
+Select Distinct domain, COUNT(Distinct title) AS hard_to_fill_jobs
 From data_analyst_jobs
-Where skill = 'SQL'
+Where skill iLIKE '%SQL%'
 	And days_since_posting >= 21
 	And domain IS NOT NULL
-Group by domain
-Order BY number_of_jobs DESC
-Limit 4;
---Answer: Consulting(5), Consumer(2), Computer(1), Internet(1)
-
-Select domain, Count(title) AS number_of_jobs, Round(AVG(days_since_posting),2) AS avg_days_listed
-From data_analyst_jobs
-Where skill = 'SQL'
-	AND days_since_posting >= 21
-	AND domain IS NOT NULL
 Group BY domain
-Order BY number_of_jobs DESC;
+Order By hard_to_fill_jobs DESC
+Limit 4;
+--Internet/Software(43), HealthCare(41), Services[Banks/Financial(39), Consulting/Business(33)]
